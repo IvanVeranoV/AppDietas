@@ -1,0 +1,40 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribution / packaging
+.Python
+env/
+venv/
+ENV/
+build/
+dist/
+.eggs/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Pytest
+.pytest_cache/
+
+# VS Code
+.vscode/
+
+# Docker
+docker-compose.override.yml
+
+# Logs
+*.log
+
+# SQLite database files
+*.db
+
+# Environment variables
+.env
+
+# Editor backups
+*~
+
+# IDE files
+.idea/

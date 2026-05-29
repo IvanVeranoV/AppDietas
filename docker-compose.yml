@@ -1,0 +1,35 @@
+﻿services:
+  app:
+    build: .
+    volumes:
+      - .:/app
+    command: sleep infinity
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+  db:
+    image: postgres:16
+    restart: always
+    environment:                           # <-- Cambia 'env_file' por 'environment'
+      POSTGRES_USER: ${DB_USER}            # Toma el valor de DB_USER del .env
+      POSTGRES_PASSWORD: ${DB_PASSWORD}    # Toma el valor de DB_PASSWORD del .env
+      POSTGRES_DB: ${DB_NAME}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin_container
+    environment:                           # <-- Cambia 'env_file' por 'environment'
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}            # Toma el valor de PGADMIN_DEFAULT_EMAIL del .env
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}    # Toma el valor de PGADMIN_DEFAULT_PASSWORD del .env
+    ports:
+      - "5050:80"
+    depends_on:
+      - db
+
+volumes:
+  postgres_data:

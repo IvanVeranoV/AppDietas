@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "appdietas"
+version = "0.1.0"
+description = "Plataforma web integral diseñada para la planificación familiar de menús y la automatización inteligente de listas de la compra. Bajo un enfoque Zero-Waste, el sistema optimiza la logística del hogar gestionando ingredientes por unidades completas, eliminando la necesidad de micro-gestión de gramos."
+authors = ["Ivan <ivanverano94@gmail.com>"]
+package-mode = false
+
+[tool.poetry.dependencies]
+python = ">=3.13"
+fastapi = "^0.115.0"
+uvicorn = {extras = ["standard"], version = "^0.30.0"}
+sqlalchemy = "^2.0.0"
+psycopg2-binary = "^2.9.0"
+alembic = "^1.18.4"
+
+[build-system]
+requires = ["poetry-core>=2.0.0"]
+build-backend = "poetry.core.masonry.api"
