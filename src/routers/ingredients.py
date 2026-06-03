@@ -4,11 +4,25 @@ from sqlalchemy.orm import Session
 
 from src.models import Ingredient
 from ..database import get_db
-from ..schemas import IngredientCreate, IngredientRead
-from ..crud import get_categories, create_ingredient
+from ..schemas import IngredientCreate, IngredientRead, IngredientUpdate
+from ..crud import get_categories, create_ingredient, modify_ingredient
 
 logger = logging.getLogger("app.routers.ingredients")
 router = APIRouter(tags=["ingredients"])
+
+@router.get("/", response_model=list[IngredientRead])
+def list_ingredients(db: Session = Depends(get_db)):
+    """
+    Endpoint to list all ingredients.
+    """
+    try:
+        return db.query(Ingredient).all()
+    except Exception as e:
+        logger.error("Failed to fetch ingredients via API", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="An error occurred while fetching the ingredients."
+        )
 
 @router.post("/", response_model=IngredientRead, status_code=status.HTTP_201_CREATED)
 def add_ingredient(ingredient_in: IngredientCreate, db: Session = Depends(get_db)):
@@ -46,16 +60,16 @@ def add_ingredient(ingredient_in: IngredientCreate, db: Session = Depends(get_db
             detail="An error occurred while creating the ingredient."
         )
 
-@router.get("/", response_model=list[IngredientRead])
-def list_ingredients(db: Session = Depends(get_db)):
+@router.patch("/{ingredient_id}", response_model=IngredientUpdate)
+def update_ingredient(ingredient_id: int, ingredient_in: IngredientUpdate, db: Session = Depends(get_db)):
     """
-    Endpoint to list all ingredients.
+    Endpoint to update an existing ingredient.
     """
     try:
-        return db.query(Ingredient).all()
+        return modify_ingredient(db=db, ingredient_id=ingredient_id, ingredient_in=ingredient_in)
     except Exception as e:
-        logger.error("Failed to fetch ingredients via API", exc_info=True)
+        logger.error("Failed to update ingredient via API", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="An error occurred while fetching the ingredients."
+            detail="An error occurred while updating the ingredient."
         )

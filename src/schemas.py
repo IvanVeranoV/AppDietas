@@ -3,6 +3,7 @@
 class IngredientBase(BaseModel):
     name: str = Field(..., max_length=100)
     is_fresh: bool = Field(default=False)
+    category_id: int | None = Field(default=None)
 
 class IngredientCreate(IngredientBase):
     category_name: str | None = Field(default=None)
@@ -14,14 +15,21 @@ class IngredientRead(IngredientBase):
     class Config:
         from_attributes = True
 
+class IngredientUpdate(IngredientBase):
+    category_id: int | None
 
-class CategoryCreate(BaseModel):
+
+class CategoryBase(BaseModel):
     name: str = Field(..., max_length=100)
 
+class CategoryCreate(CategoryBase):
+    pass
 
-class CategoryRead(BaseModel):
+class CategoryRead(CategoryBase):
     id: int
-    name: str
 
     class Config:
         from_attributes = True
+
+class CategoryUpdate(CategoryBase):
+    pass
