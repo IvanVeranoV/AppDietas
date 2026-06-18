@@ -12,6 +12,7 @@ logger = logging.getLogger("app.routers.recipes")
 router = APIRouter(tags=["recipes"])
 
 
+@router.get("", response_model=list[RecipeRead])
 @router.get("/", response_model=list[RecipeRead])
 def list_recipes(db: Session = Depends(get_db)):
     return get_recipes(db)

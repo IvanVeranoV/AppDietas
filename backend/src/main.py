@@ -3,6 +3,7 @@ from pathlib import Path
 
 from fastapi import FastAPI, Request, status
 from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
 
 from src.exceptions import DatabaseError, ResourceNotFoundError
 
@@ -11,8 +12,20 @@ from .routers import categories, ingredients, menus, recipe_ingredients, recipes
 # Configuración básica del logger según tus directrices de AGENTS.md
 logger = logging.getLogger("app.main")
 
-app = FastAPI(docs_url=None)  # Desactivamos el por defecto para que no choque
+app = FastAPI(docs_url=None, redirect_slashes=False)
 
+origins = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.get("/docs", include_in_schema=False)
 async def custom_swagger_ui():
