@@ -4,7 +4,7 @@ from datetime import datetime
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 
-from ..crud import create_recipe, get_recipes, modify_recipe, soft_delete_recipe
+from ..crud import create_recipe, get_recipes, modify_recipe, generic_soft_delete
 from ..database import get_db
 from ..schemas import RecipeCreate, RecipeDelete, RecipeRead, RecipeUpdate
 
@@ -17,13 +17,12 @@ router = APIRouter(tags=["recipes"])
 def list_recipes(db: Session = Depends(get_db)):
     return get_recipes(db)
 
-
+@router.post("", response_model=RecipeRead, status_code=status.HTTP_201_CREATED)
 @router.post("/", response_model=RecipeRead, status_code=status.HTTP_201_CREATED)
 def add_recipe(recipe_in: RecipeCreate, db: Session = Depends(get_db)):
     return create_recipe(
         db=db,
-        name=recipe_in.name,
-        instructions=recipe_in.instructions,
+        recipe_in=recipe_in,
     )
 
 
@@ -37,4 +36,4 @@ def update_recipe(
 @router.delete("/{recipe_id}", response_model=RecipeDelete)
 def delete_recipe(recipe_id: int, db: Session = Depends(get_db)):
     recipe_in = RecipeDelete(id=recipe_id, deleted_at=datetime.now())
-    return soft_delete_recipe(db=db, recipe_id=recipe_id, recipe_in=recipe_in)
+    return generic_soft_delete(db=db, recipe_id=recipe_id, recipe_in=recipe_in)

@@ -1,6 +1,7 @@
+from datetime import datetime
 import logging
 
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 from .exceptions import DatabaseError, ResourceNotFoundError
 from .models import CalendarMenu, Category, Ingredient, Recipe, RecipeIngredient, User
@@ -11,6 +12,7 @@ from .schemas import (
     CategoryUpdate,
     IngredientDelete,
     IngredientUpdate,
+    RecipeCreate,
     RecipeDelete,
     RecipeIngredientDelete,
     RecipeIngredientUpdate,
@@ -60,6 +62,24 @@ def _update_entity_fields(entity, update_schema):
     return entity
 
 
+def generic_soft_delete(db: Session, model_class, entity_id: int) -> any:
+    try:
+        # 1. Recuperamos usando el helper que ya tienes
+        entity = _get_entity_by_id(db, model_class, entity_id)
+        
+        # 2. Actualizamos el campo deleted_at dinámicamente
+        entity.deleted_at = datetime.now()
+        
+        db.commit()
+        db.refresh(entity)
+        return entity
+    except ResourceNotFoundError:
+        raise
+    except Exception as e:
+        db.rollback()
+        logger.error(f"Error soft deleting {model_class.__name__} {entity_id}", exc_info=True)
+        raise DatabaseError(f"Failed to delete {model_class.__name__} in the database.") from e
+
 # --- Core CRUD Functions ---
 
 # --- Category CRUD ---
@@ -106,25 +126,6 @@ def modify_category(
         raise DatabaseError("Failed to modify category in the database.") from e
 
 
-def soft_delete_category(
-    db: Session, category_id: int, category_in: CategoryDelete
-) -> Category:
-    try:
-        category = _get_entity_by_id(db, Category, category_id)
-        deleted_category = _update_entity_fields(category, category_in)
-        db.commit()
-        db.refresh(deleted_category)
-        return deleted_category
-    except ResourceNotFoundError:
-        raise
-    except Exception as e:
-        db.rollback()
-        logger.error(
-            f"Database error while soft deleting category {category_id}", exc_info=True
-        )
-        raise DatabaseError("Failed to delete category in the database.") from e
-
-
 # --- Ingredient CRUD ---
 
 
@@ -154,10 +155,10 @@ def create_ingredient(
 
 
 def modify_ingredient(
-    db: Session, ingredient_id: int, ingredient_in: IngredientUpdate
+    db: Session, ingredient_in: IngredientUpdate
 ) -> Ingredient:
     try:
-        ingredient = _get_entity_by_id(db, Ingredient, ingredient_id)
+        ingredient = _get_entity_by_id(db, Ingredient, ingredient_in.id)
         updated_ingredient = _update_entity_fields(ingredient, ingredient_in)
         db.commit()
         db.refresh(updated_ingredient)
@@ -167,29 +168,9 @@ def modify_ingredient(
     except Exception as e:
         db.rollback()
         logger.error(
-            f"Database error while modifying ingredient {ingredient_id}", exc_info=True
+            f"Database error while modifying ingredient {ingredient_in.name}", exc_info=True
         )
         raise DatabaseError("Failed to modify ingredient in the database.") from e
-
-
-def soft_delete_ingredient(
-    db: Session, ingredient_id: int, ingredient_in: IngredientDelete
-) -> Ingredient:
-    try:
-        ingredient = _get_entity_by_id(db, Ingredient, ingredient_id)
-        deleted_ingredient = _update_entity_fields(ingredient, ingredient_in)
-        db.commit()
-        db.refresh(deleted_ingredient)
-        return deleted_ingredient
-    except ResourceNotFoundError:
-        raise
-    except Exception as e:
-        db.rollback()
-        logger.error(
-            f"Database error while soft deleting ingredient {ingredient_id}",
-            exc_info=True,
-        )
-        raise DatabaseError("Failed to delete ingredient in the database.") from e
 
 
 # --- Recipe CRUD ---
@@ -197,20 +178,32 @@ def soft_delete_ingredient(
 
 def get_recipes(db: Session):
     try:
-        return db.query(Recipe).filter(Recipe.deleted_at.is_(None)).all()
+        return db.query(Recipe).options(joinedload(Recipe.recipe_ingredients)).filter(Recipe.deleted_at.is_(None)).all()
     except Exception as e:
         logger.error("Database error while fetching recipes", exc_info=True)
         raise DatabaseError("Failed to fetch recipes from the database.") from e
 
 
 def create_recipe(
-    db: Session, name: str, instructions: str | None = None
+    db: Session, recipe_in: RecipeCreate
 ) -> Recipe:
     try:
-        new_recipe = Recipe(name=name, instructions=instructions)
+        new_recipe = Recipe(name=recipe_in.name, instructions=recipe_in.instructions)
         db.add(new_recipe)
         db.commit()
         db.refresh(new_recipe)
+
+        if recipe_in.ingredients:
+            for ing in recipe_in.ingredients:
+                db_recipe_ingredient = RecipeIngredient(
+                recipe_id=new_recipe.id,
+                ingredient_id=ing.ingredient_id,
+                quantity=ing.quantity
+            )
+            db.add(db_recipe_ingredient)
+        
+        db.commit()
+
         return new_recipe
     except Exception as e:
         db.rollback()
@@ -233,23 +226,6 @@ def modify_recipe(db: Session, recipe_id: int, recipe_in: RecipeUpdate) -> Recip
             f"Database error while modifying recipe {recipe_id}", exc_info=True
         )
         raise DatabaseError("Failed to modify recipe in the database.") from e
-
-
-def soft_delete_recipe(db: Session, recipe_id: int, recipe_in: RecipeDelete) -> Recipe:
-    try:
-        recipe = _get_entity_by_id(db, Recipe, recipe_id)
-        deleted_recipe = _update_entity_fields(recipe, recipe_in)
-        db.commit()
-        db.refresh(deleted_recipe)
-        return deleted_recipe
-    except ResourceNotFoundError:
-        raise
-    except Exception as e:
-        db.rollback()
-        logger.error(
-            f"Database error while soft deleting recipe {recipe_id}", exc_info=True
-        )
-        raise DatabaseError("Failed to delete recipe from the database.") from e
 
 
 # --- RecipeIngredient CRUD ---
@@ -316,32 +292,6 @@ def modify_recipe_ingredient(
         ) from e
 
 
-def soft_delete_recipe_ingredient(
-    db: Session, recipe_ingredient_id: int, recipe_ingredient_in: RecipeIngredientDelete
-) -> RecipeIngredient:
-    try:
-        recipe_ingredient = _get_entity_by_id(
-            db, RecipeIngredient, recipe_ingredient_id
-        )
-        deleted_recipe_ingredient = _update_entity_fields(
-            recipe_ingredient, recipe_ingredient_in
-        )
-        db.commit()
-        db.refresh(deleted_recipe_ingredient)
-        return deleted_recipe_ingredient
-    except ResourceNotFoundError:
-        raise
-    except Exception as e:
-        db.rollback()
-        logger.error(
-            f"Database error while soft deleting recipe ingredient {recipe_ingredient_id}",
-            exc_info=True,
-        )
-        raise DatabaseError(
-            "Failed to delete recipe ingredient from the database."
-        ) from e
-
-
 # --- User CRUD ---
 
 
@@ -379,23 +329,6 @@ def modify_user(db: Session, user_id: int, user_in: UserUpdate) -> User:
         db.rollback()
         logger.error(f"Database error while modifying user {user_id}", exc_info=True)
         raise DatabaseError("Failed to modify user in the database.") from e
-
-
-def soft_delete_user(db: Session, user_id: int, user_in: UserDelete) -> User:
-    try:
-        user = _get_entity_by_id(db, User, user_id)
-        deleted_user = _update_entity_fields(user, user_in)
-        db.commit()
-        db.refresh(deleted_user)
-        return deleted_user
-    except ResourceNotFoundError:
-        raise
-    except Exception as e:
-        db.rollback()
-        logger.error(
-            f"Database error while soft deleting user {user_id}", exc_info=True
-        )
-        raise DatabaseError("Failed to delete user from the database.") from e
 
 
 # --- CalendarMenu CRUD ---
@@ -447,23 +380,3 @@ def modify_calendar_menu(
             exc_info=True,
         )
         raise DatabaseError("Failed to modify calendar menu in the database.") from e
-
-
-def soft_delete_calendar_menu(
-    db: Session, calendar_menu_id: int, calendar_menu_in: CalendarMenuDelete
-) -> CalendarMenu:
-    try:
-        calendar_menu = _get_entity_by_id(db, CalendarMenu, calendar_menu_id)
-        deleted_calendar_menu = _update_entity_fields(calendar_menu, calendar_menu_in)
-        db.commit()
-        db.refresh(deleted_calendar_menu)
-        return deleted_calendar_menu
-    except ResourceNotFoundError:
-        raise
-    except Exception as e:
-        db.rollback()
-        logger.error(
-            f"Database error while soft deleting calendar menu {calendar_menu_id}",
-            exc_info=True,
-        )
-        raise DatabaseError("Failed to delete calendar menu from the database.") from e

@@ -8,7 +8,7 @@ from ..crud import (
     create_calendar_menu,
     get_calendar_menus,
     modify_calendar_menu,
-    soft_delete_calendar_menu,
+    generic_soft_delete,
 )
 from ..database import get_db
 from ..schemas import (
@@ -50,6 +50,6 @@ def update_menu(
 @router.delete("/{menu_id}", response_model=CalendarMenuDelete)
 def delete_menu(menu_id: int, db: Session = Depends(get_db)):
     menu_in = CalendarMenuDelete(id=menu_id, deleted_at=datetime.now())
-    return soft_delete_calendar_menu(
+    return generic_soft_delete(
         db=db, calendar_menu_id=menu_id, calendar_menu_in=menu_in
     )

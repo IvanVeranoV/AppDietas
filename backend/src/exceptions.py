@@ -5,3 +5,8 @@ class ResourceNotFoundError(Exception):
 class DatabaseError(Exception):
     """Raised when a database operations fails unexpectedly (Maps to 500)."""
     pass
+
+class DependencyError(Exception):
+    def __init__(self, message: str, details: list):
+        self.message = message
+        self.details = details

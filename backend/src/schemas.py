@@ -25,8 +25,10 @@ class IngredientRead(IngredientBase):
 
 
 class IngredientUpdate(IngredientBase):
-    category_id: int | None
-
+    id: int
+    
+    class Config:
+        from_attributes = True
 
 class IngredientDelete(BaseModel):
     id: int
@@ -73,13 +75,23 @@ class RecipeBase(BaseModel):
     name: str = Field(..., max_length=255)
     instructions: str | None = Field(default=None)
 
+class RecipeIngredientForm(BaseModel):
+    ingredient_id: int
+    quantity: int = Field(..., ge=1)
 
 class RecipeCreate(RecipeBase):
-    pass
+    ingredients: list[RecipeIngredientForm] = []
 
+class RecipeIngredientDetailRead(BaseModel):
+    ingredient_id: int
+    quantity: int
+
+    class Config:
+        from_attributes = True
 
 class RecipeRead(RecipeBase):
     id: int
+    ingredients: list[RecipeIngredientDetailRead] = []
 
     class Config:
         from_attributes = True
@@ -104,7 +116,6 @@ class RecipeIngredientBase(BaseModel):
     recipe_id: int
     ingredient_id: int
     quantity: int = Field(..., ge=1)
-
 
 class RecipeIngredientCreate(RecipeIngredientBase):
     pass

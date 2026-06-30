@@ -8,7 +8,7 @@ from ..crud import (
     create_recipe_ingredient,
     get_recipe_ingredients,
     modify_recipe_ingredient,
-    soft_delete_recipe_ingredient,
+    generic_soft_delete,
 )
 from ..database import get_db
 from ..schemas import (
@@ -60,7 +60,7 @@ def delete_recipe_ingredient(recipe_ingredient_id: int, db: Session = Depends(ge
     recipe_ingredient_in = RecipeIngredientDelete(
         id=recipe_ingredient_id, deleted_at=datetime.now()
     )
-    return soft_delete_recipe_ingredient(
+    return generic_soft_delete(
         db=db,
         recipe_ingredient_id=recipe_ingredient_id,
         recipe_ingredient_in=recipe_ingredient_in,

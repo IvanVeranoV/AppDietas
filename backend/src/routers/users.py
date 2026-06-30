@@ -4,7 +4,7 @@ from datetime import datetime
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 
-from ..crud import create_user, get_users, modify_user, soft_delete_user
+from ..crud import create_user, get_users, modify_user, generic_soft_delete
 from ..database import get_db
 from ..schemas import UserCreate, UserDelete, UserRead, UserUpdate
 
@@ -30,4 +30,4 @@ def update_user(user_id: int, user_in: UserUpdate, db: Session = Depends(get_db)
 @router.delete("/{user_id}", response_model=UserDelete)
 def delete_user(user_id: int, db: Session = Depends(get_db)):
     user_in = UserDelete(id=user_id, deleted_at=datetime.now())
-    return soft_delete_user(db=db, user_id=user_id, user_in=user_in)
+    return generic_soft_delete(db=db, user_id=user_id, user_in=user_in)

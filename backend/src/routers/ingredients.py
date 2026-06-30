@@ -1,28 +1,33 @@
 import logging
-from datetime import datetime
 
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
+
+from src.exceptions import DependencyError
+
+from ..models import RecipeIngredient, Ingredient
 
 from ..crud import (
     create_ingredient,
     get_categories,
     get_ingredients,
     modify_ingredient,
-    soft_delete_ingredient,
+    generic_soft_delete,
 )
 from ..database import get_db
-from ..schemas import IngredientCreate, IngredientDelete, IngredientRead, IngredientUpdate
+from ..schemas import IngredientCreate, IngredientRead, IngredientUpdate
 
 logger = logging.getLogger("app.routers.ingredients")
 router = APIRouter(tags=["ingredients"])
 
 
+@router.get("", response_model=list[IngredientRead])
 @router.get("/", response_model=list[IngredientRead])
 def list_ingredients(db: Session = Depends(get_db)):
     return get_ingredients(db)
 
 
+@router.post("", response_model=IngredientRead, status_code=status.HTTP_201_CREATED)
 @router.post("/", response_model=IngredientRead, status_code=status.HTTP_201_CREATED)
 def add_ingredient(
     ingredient_in: IngredientCreate,
@@ -50,18 +55,23 @@ def add_ingredient(
     )
 
 
-@router.patch("/{ingredient_id}", response_model=IngredientRead)
+# En tu routers/ingredients.py
+@router.put("/{ingredient_id}", response_model=IngredientRead)
 def update_ingredient(
-    ingredient_id: int, ingredient_in: IngredientUpdate, db: Session = Depends(get_db)
+    ingredient_in: IngredientUpdate, 
+    db: Session = Depends(get_db)
 ):
     return modify_ingredient(
-        db=db, ingredient_id=ingredient_id, ingredient_in=ingredient_in
+        db=db, ingredient_in=ingredient_in
     )
 
 
-@router.delete("/{ingredient_id}", response_model=IngredientDelete)
+@router.delete("/{ingredient_id}")
 def delete_ingredient(ingredient_id: int, db: Session = Depends(get_db)):
-    ingredient_in = IngredientDelete(id=ingredient_id, deleted_at=datetime.now())
-    return soft_delete_ingredient(
-        db=db, ingredient_id=ingredient_id, ingredient_in=ingredient_in
-    )
+    used_in_recipes = db.query(RecipeIngredient).filter(RecipeIngredient.ingredient_id == ingredient_id).all()
+    
+    if used_in_recipes:
+        recipe_names = [item.recipe.name for item in used_in_recipes]
+        raise DependencyError("Error al borrar el ingrediente", details=recipe_names)
+    
+    return generic_soft_delete(db=db, model_class=Ingredient, entity_id=ingredient_id)

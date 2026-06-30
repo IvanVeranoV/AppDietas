@@ -16,6 +16,14 @@
       </router-link>
 
       <router-link 
+        to="/ingredients" 
+        class="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-800 hover:text-emerald-400 transition-colors"
+        active-class="bg-slate-800 text-emerald-400 border-l-4 border-emerald-400"
+      >
+        <span>🥗</span> Ingredientes
+      </router-link>
+
+      <router-link 
         to="/recipes" 
         class="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-800 hover:text-emerald-400 transition-colors"
         active-class="bg-slate-800 text-emerald-400 border-l-4 border-emerald-400"
@@ -30,6 +38,7 @@
       >
         <span>📅</span> Calendario
       </router-link>
+
     </nav>
 
     <div class="p-4 border-t border-slate-800 text-sm">

@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 
 from ..crud import create_category as create_category_record
-from ..crud import get_categories, modify_category, soft_delete_category
+from ..crud import get_categories, modify_category, generic_soft_delete
 from ..database import get_db
 from ..schemas import CategoryCreate, CategoryDelete, CategoryRead, CategoryUpdate
 
@@ -15,6 +15,7 @@ router = APIRouter(tags=["categories"])
 # Los DatabaseError y ResourceNotFoundError serán capturados por los manejadores globales en main.py
 
 
+@router.get("", response_model=list[CategoryRead])
 @router.get("/", response_model=list[CategoryRead])
 def list_categories(db: Session = Depends(get_db)):
     return get_categories(db)
@@ -35,4 +36,4 @@ def update_category(
 @router.delete("/{category_id}", response_model=CategoryDelete)
 def delete_category(category_id: int, db: Session = Depends(get_db)):
     category_in = CategoryDelete(id=category_id, deleted_at=datetime.now())
-    return soft_delete_category(db=db, category_id=category_id, category_in=category_in)
+    return generic_soft_delete(db=db, category_id=category_id, category_in=category_in)

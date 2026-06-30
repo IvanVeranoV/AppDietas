@@ -5,7 +5,7 @@ from fastapi import FastAPI, Request, status
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 
-from src.exceptions import DatabaseError, ResourceNotFoundError
+from src.exceptions import DatabaseError, ResourceNotFoundError, DependencyError
 
 from .routers import categories, ingredients, menus, recipe_ingredients, recipes, users
 
@@ -118,6 +118,19 @@ async def database_error_handler(request: Request, exc: DatabaseError):
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         content={
             "detail": "A critical database error occurred. Please try again later."
+        },
+    )
+
+@app.exception_handler(DependencyError)
+async def dependency_error_handler(request: Request, exc: DependencyError):
+    """
+    Captura conflictos de integridad referencial.
+    """
+    return JSONResponse(
+        status_code=status.HTTP_409_CONFLICT,
+        content={
+            "message": exc.message,
+            "recipes": exc.details
         },
     )
 
