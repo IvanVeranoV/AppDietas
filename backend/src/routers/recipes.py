@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from ..crud import create_recipe, get_recipes, modify_recipe, generic_soft_delete
 from ..database import get_db
 from ..schemas import RecipeCreate, RecipeDelete, RecipeRead, RecipeUpdate
+from ..models import Recipe 
 
 logger = logging.getLogger("app.routers.recipes")
 router = APIRouter(tags=["recipes"])
@@ -35,5 +36,5 @@ def update_recipe(
 
 @router.delete("/{recipe_id}", response_model=RecipeDelete)
 def delete_recipe(recipe_id: int, db: Session = Depends(get_db)):
-    recipe_in = RecipeDelete(id=recipe_id, deleted_at=datetime.now())
-    return generic_soft_delete(db=db, recipe_id=recipe_id, recipe_in=recipe_in)
+    #recipe_in = RecipeDelete(id=recipe_id, deleted_at=datetime.now())
+    return generic_soft_delete(db=db, model_class=Recipe, entity_id=recipe_id)

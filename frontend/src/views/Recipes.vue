@@ -2,34 +2,34 @@
   <div class="space-y-6">
     <div class="flex justify-between items-center">
       <div>
-        <h2 class="text-3xl font-bold text-emerald-400">My Recipes</h2>
-        <p class="text-slate-400">Manage your culinary creations and view preparation steps.</p>
+        <h2 class="app-page-title">My Recipes</h2>
+        <p class="app-page-subtitle">Manage your culinary creations and view preparation steps.</p>
       </div>
-      <button v-if="recipes.length > 0 && !isLoading && !hasServerError" @click="openCreateModal"
-        class="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold px-4 py-2.5 rounded-lg transition-colors flex items-center gap-2 text-sm shadow-lg shadow-emerald-500/10">
+      <button type="button" v-if="recipes.length > 0 && !isLoading && !hasServerError" @click="openCreateModal"
+        class="btn-primary px-4 py-2.5 flex items-center gap-2 text-sm shadow-lg shadow-emerald-500/10">
         ➕ Add New Recipe
       </button>
     </div>
 
-    <div v-if="isLoading" class="text-center py-12 bg-slate-900 rounded-xl border border-slate-800">
+    <div v-if="isLoading" class="text-center py-12 app-surface">
       <p class="text-emerald-400 font-medium animate-pulse text-lg">⏳ Connecting to server...</p>
     </div>
 
     <div v-else-if="hasServerError" class="text-center py-12 bg-rose-950/20 rounded-xl border border-rose-800/50 p-6">
       <span class="text-4xl">⚠️</span>
       <h3 class="text-xl font-bold text-rose-400 mt-2">Unable to retrieve data from the server</h3>
-      <button @click="fetchRecipes"
+      <button type="button" @click="fetchRecipes"
         class="mt-4 bg-rose-500 hover:bg-rose-600 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors">
         Retry connection
       </button>
     </div>
 
-    <div v-else-if="recipes.length === 0" class="text-center py-12 bg-slate-900 rounded-xl border border-slate-800 p-6">
+    <div v-else-if="recipes.length === 0" class="text-center py-12 app-surface p-6">
       <span class="text-4xl">🍳</span>
       <h3 class="text-xl font-bold text-slate-200 mt-2">No recipes created yet</h3>
       <p class="text-slate-400 mt-1 mb-6">Ready to start planning your diet?</p>
-      <button @click="openCreateModal"
-        class="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-semibold px-4 py-2 rounded-lg transition-colors">
+      <button type="button" @click="openCreateModal"
+        class="btn-primary-sm px-4 py-2">
         ➕ Create your first recipe
       </button>
     </div>
@@ -48,7 +48,7 @@
           <h3 class="text-xl font-bold text-slate-100 mb-4 line-clamp-2 min-h-[3.5rem] flex items-center">
             {{ recipe.name }}
           </h3>
-          <button @click="openInstructions(recipe)"
+          <button type="button" @click="openInstructions(recipe)"
             class="w-full bg-slate-800 hover:bg-emerald-500 hover:text-slate-950 text-emerald-400 font-semibold py-2.5 px-4 rounded-lg transition-all duration-300 flex items-center justify-center gap-2 border border-slate-700">
             📖 View Instructions
           </button>
@@ -57,14 +57,12 @@
     </div>
 
     <div v-if="isViewModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div @click="closeViewModal" class="absolute inset-0 bg-slate-950/75 backdrop-blur-sm"></div>
+      <div @click="closeViewModal" class="modal-backdrop"></div>
 
-      <div
-        class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-xl overflow-hidden shadow-2xl relative z-10 animate-in fade-in zoom-in-95 duration-200">
+      <div class="modal-window-lg animate-in fade-in zoom-in-95 duration-200">
         <div class="p-6 border-b border-slate-800 flex justify-between items-start bg-slate-950/40">
           <h3 class="text-2xl font-bold text-slate-100 pr-4">{{ selectedRecipe?.name }}</h3>
-          <button @click="closeViewModal"
-            class="text-slate-400 hover:text-slate-200 bg-slate-800/50 hover:bg-slate-800 p-1.5 rounded-lg">✕</button>
+          <button type="button" @click="closeViewModal" class="btn-icon">✕</button>
         </div>
 
         <div class="p-6 max-h-[65vh] overflow-y-auto space-y-6">
@@ -98,10 +96,23 @@
               class="text-slate-300 leading-relaxed whitespace-pre-line text-sm bg-slate-950/20 p-4 rounded-xl border border-slate-800/50">
               {{ selectedRecipe?.instructions }}
             </p>
-            <div class="p-4 text-right flex justify-end gap-2">
-              <button @click="openEditModal(recipe)" class="text-emerald-400 hover:text-emerald-300">Edit</button>
-              <button @click="initiateDelete(recipe)" class="text-red-400 hover:text-red-300">Delete</button>
+                        <div class="p-4 text-right flex justify-end gap-2">
+              <button type="button" @click="openEditModal(selectedRecipe)" class="btn-link">Edit</button>
+              <button type="button" @click="initiateDelete(selectedRecipe)" class="btn-danger">Delete</button>
             </div>
+
+            <EditModal :show="isEditModalOpen" title="Edit Recipe" @close="isEditModalOpen = false" @confirm="handleUpdate">
+              <div class="space-y-4">
+                <div class="space-y-2">
+                  <label for="edit-recipe-name" class="text-xs font-bold text-slate-400 uppercase">Recipe Name</label>
+                  <input id="edit-recipe-name" v-model="newRecipe.name" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-200 text-sm focus:outline-none focus:border-emerald-500" />
+                </div>
+                <div class="space-y-2">
+                  <label for="edit-recipe-instructions" class="text-xs font-bold text-slate-400 uppercase">Instructions</label>
+                  <textarea id="edit-recipe-instructions" v-model="newRecipe.instructions" rows="4" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-200 text-sm focus:outline-none focus:border-emerald-500"></textarea>
+                </div>
+              </div>
+            </EditModal>
 
             <Modal :show="isModalOpen" :title="modalTitle" @close="isModalOpen = false" @confirm="handleConfirm">
               <p class="whitespace-pre-line">{{ modalMessage }}</p>
@@ -111,47 +122,44 @@
         </div>
 
         <div class="p-4 bg-slate-950/40 border-t border-slate-800 flex justify-end">
-          <button @click="closeViewModal"
-            class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-5 py-2 rounded-lg text-sm font-medium">Close</button>
+          <button type="button" @click="closeViewModal" class="btn-secondary px-5 py-2 text-sm">Close</button>
         </div>
       </div>
     </div>
 
     <div v-if="isCreateModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div @click="!isSubmitting && closeCreateModal()" class="absolute inset-0 bg-slate-950/75 backdrop-blur-sm"></div>
+      <div @click="!isSubmitting && closeCreateModal()" class="modal-backdrop"></div>
 
-      <div
-        class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl relative z-10 animate-in fade-in zoom-in-95 duration-200">
+      <div class="modal-window animate-in fade-in zoom-in-95 duration-200">
         <div class="p-6 border-b border-slate-800 flex justify-between items-center bg-slate-950/40">
           <h3 class="text-xl font-bold text-slate-100">Create New Recipe</h3>
-          <button :disabled="isSubmitting" @click="closeCreateModal"
-            class="text-slate-400 hover:text-slate-200 bg-slate-800/50 hover:bg-slate-800 p-1.5 rounded-lg disabled:opacity-50">✕</button>
+          <button type="button" :disabled="isSubmitting" @click="closeCreateModal" class="btn-icon disabled:opacity-50">✕</button>
         </div>
 
         <form @submit.prevent="handleCreateRecipe">
           <div class="p-6 space-y-5 max-h-[65vh] overflow-y-auto">
 
             <div class="space-y-2">
-              <label for="recipe-name" class="text-xs font-bold text-slate-400 uppercase tracking-wider">Recipe Name
+              <label for="recipe-name" class="form-label">Recipe Name
                 *</label>
               <input id="recipe-name" v-model="newRecipeName" type="text" required
                 placeholder="e.g., Grilled Salmon with Asparagus"
-                class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-200 placeholder-slate-600 focus:outline-none focus:border-emerald-500 transition-colors text-sm"
+                class="app-input"
                 :disabled="isSubmitting" />
             </div>
 
             <div class="space-y-2">
-              <label for="recipe-steps" class="text-xs font-bold text-slate-400 uppercase tracking-wider">Preparation
+              <label for="recipe-steps" class="form-label">Preparation
                 Instructions</label>
               <textarea id="recipe-steps" v-model="newRecipeInstructions" rows="4"
                 placeholder="Describe the step-by-step cooking method..."
-                class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-200 placeholder-slate-600 focus:outline-none focus:border-emerald-500 transition-colors text-sm resize-none"
+                class="app-input resize-none"
                 :disabled="isSubmitting"></textarea>
             </div>
 
             <div class="space-y-3 pt-2 border-t border-slate-800/60">
               <div class="flex justify-between items-center">
-                <div class="text-xs font-bold text-slate-400 uppercase tracking-wider">Ingredients & Quantities</div>
+                <div class="form-label">Ingredients & Quantities</div>
                 <button type="button" @click="addIngredientRow"
                   class="text-xs bg-slate-800 hover:bg-slate-700 text-emerald-400 font-semibold px-2.5 py-1 rounded-lg border border-slate-700 transition-colors">
                   ➕ Add Ingredient
@@ -165,7 +173,7 @@
                 <select :id="`ingredient-${index}`" v-model="row.ingredient_id"
                   class="flex-grow bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-slate-200 text-sm focus:outline-none focus:border-emerald-500"
                   required>
-                  <option value="" disabled selected>Select an ingredient...</option>
+                  <option value="" disabled>Select an ingredient...</option>
                   <option v-for="ing in ingredientsCatalog" :key="ing.id" :value="ing.id"
                     :disabled="recipeIngredientsForm.some(item => item.ingredient_id === ing.id && item.ingredient_id !== row.ingredient_id)">
                     {{ ing.name }} {{ ing.is_fresh ? '🌿' : '' }}
@@ -187,12 +195,11 @@
           </div>
 
           <div class="p-4 bg-slate-950/40 border-t border-slate-800 flex justify-end gap-3">
-            <button type="button" :disabled="isSubmitting" @click="closeCreateModal"
-              class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+            <button type="button" :disabled="isSubmitting" @click="closeCreateModal" class="btn-secondary px-4 py-2 text-sm">
               Cancel
             </button>
             <button type="submit" :disabled="isSubmitting || !newRecipeName.trim()"
-              class="bg-emerald-500 hover:bg-emerald-600 disabled:bg-slate-800 text-slate-950 disabled:text-slate-600 font-bold px-5 py-2 rounded-lg text-sm transition-all duration-200">
+              class="btn-primary px-5 py-2 text-sm disabled:bg-slate-800 disabled:text-slate-600">
               {{ isSubmitting ? 'Saving...' : 'Save Recipe' }}
             </button>
           </div>
@@ -205,6 +212,8 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import axios from 'axios'
+import Modal from '../components/Modal.vue'
+import EditModal from '../components/EditModal.vue'
 
 const API_RECIPES_URL = import.meta.env.VITE_API_RECIPES_URL
 const API_INGREDIENTS_URL = import.meta.env.VITE_API_INGREDIENTS_URL
@@ -223,6 +232,10 @@ const isSubmitting = ref(false)
 
 const ingredientsCatalog = ref([])
 const hasLoadedIngredients = ref(false)
+
+const newRecipe = ref({ name: '', instructions: '' }) // O los campos que tenga tu receta
+
+const isDeleteMode = ref(false)
 
 const isModalOpen = ref(false)
 const modalTitle = ref('')
@@ -299,13 +312,39 @@ const initiateDelete = (recipe) => {
   isModalOpen.value = true
 }
 
+const isEditModalOpen = ref(false)
+
+const openEditModal = (recipe) => {
+  // Clonamos la receta para editarla de forma segura
+  newRecipe.value = { ...recipe }
+  isEditModalOpen.value = true
+} 
+
+const handleUpdate = async () => {
+  try {
+    const response = await axios.patch(`${API_RECIPES_URL}/${newRecipe.value.id}`, newRecipe.value)
+    
+    // Actualizamos la lista de recetas
+    await fetchRecipes()
+    
+    // Refrescamos la receta seleccionada con la respuesta del servidor
+    selectedRecipe.value = normalizeRecipe(response.data)
+    
+    isEditModalOpen.value = false
+  } catch (error) {
+    console.error("Error updating recipe:", error)
+  }
+} 
+
 const handleConfirm = async () => {
   try {
     // Asegúrate de apuntar a la ruta correcta de recetas
-    await axios.delete(`http://127.0.0.1:8000/recipes/${recipeIdToDelete.value}`)
+    await axios.delete(`${API_RECIPES_URL}/${recipeIdToDelete.value}`)
     await fetchRecipes() // Refresca tu lista de recetas
     isModalOpen.value = false
-  } catch (error) {
+    closeViewModal()
+    } catch (error) {
+    console.error("Error deleting recipe:", error)
     modalTitle.value = "Error"
     modalMessage.value = "No se pudo eliminar la receta. Verifica que no esté en uso."
     // Si tienes lógica de 409 para recetas, agrégala aquí también
@@ -350,7 +389,9 @@ const handleCreateRecipe = async () => {
     }
   } catch (error) {
     console.error('Error creating the recipe:', error)
-    alert('Could not save the recipe with its ingredients.')
+    modalTitle.value = 'Error'
+    modalMessage.value = 'Could not save the recipe with its ingredients.'
+    isModalOpen.value = true
   } finally {
     isSubmitting.value = false
   }

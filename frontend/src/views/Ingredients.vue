@@ -1,14 +1,13 @@
 <template>
-    <div class="p-6 text-slate-200">
+    <div class="inventory-shell">
         <div class="flex justify-between items-center mb-6">
-            <h2 class="text-3xl font-bold text-emerald-400">Ingredient Inventory</h2>
-            <button @click="openCreateModal"
-                class="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold px-4 py-2 rounded-lg transition-colors">
+            <h2 class="app-page-title">Ingredient Inventory</h2>
+            <button type="button" @click="openCreateModal" class="btn-primary px-4 py-2">
                 + New Ingredient
             </button>
         </div>
 
-        <table class="w-full bg-slate-900 rounded-xl overflow-hidden border border-slate-800">
+        <table class="inventory-table">
             <thead class="bg-slate-950 text-slate-400 text-left">
                 <tr>
                     <th class="p-4">Name</th>
@@ -25,11 +24,8 @@
                         {{categories.find(cat => cat.id === ing.category_id)?.name || 'Uncategorized'}}
                     </td>
                     <td class="p-4 text-right flex justify-end gap-2">
-                        <button @click="openEditModal(ing)"
-                            class="text-emerald-400 hover:text-emerald-300 text-sm font-medium">Edit</button>
-
-                        <button @click="initiateDelete(ing)"
-                            class="text-red-400 hover:text-red-300 text-sm font-medium">Delete</button>
+                        <button type="button" @click="openEditModal(ing)" class="btn-link text-sm">Edit</button>
+                        <button type="button" @click="initiateDelete(ing)" class="btn-danger text-sm">Delete</button>
                     </td>
                 </tr>
             </tbody>
@@ -38,16 +34,16 @@
         <Modal :show="isModalOpen" :title="modalTitle" @close="isModalOpen = false" @confirm="handleConfirm">
             <form v-if="!isDeleteMode" @submit.prevent="saveIngredient" class="space-y-4">
                 <div>
-                    <label class="block text-xs font-bold text-slate-400 uppercase">Name</label>
-                    <input v-model="newIngredient.name" type="text" required
+                    <label for="ingredient-name" class="block text-xs font-bold text-slate-400 uppercase">Name</label>
+                    <input id="ingredient-name" v-model="newIngredient.name" type="text" required
                         class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 mt-1" />
                 </div>
-                <label class="flex items-center gap-2 text-sm">
-                    <input v-model="newIngredient.is_fresh" type="checkbox" /> Is this ingredient fresh? (🌿)
+                <label for="ingredient-fresh" class="flex items-center gap-2 text-sm">
+                    <input id="ingredient-fresh" v-model="newIngredient.is_fresh" type="checkbox" /> Is this ingredient fresh? (🌿)
                 </label>
                 <div>
-                    <label class="block text-xs font-bold text-slate-400 uppercase">Category</label>
-                    <select v-model="newIngredient.category_id" required
+                    <label for="ingredient-category" class="block text-xs font-bold text-slate-400 uppercase">Category</label>
+                    <select id="ingredient-category" v-model="newIngredient.category_id" required
                         class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 mt-1">
                         <option :value="null" disabled>Select a category...</option>
                         <option v-for="cat in categories" :key="cat.id" :value="cat.id">{{ cat.name }}</option>
@@ -139,7 +135,9 @@ const handleConfirm = async () => {
                 modalTitle.value = "Conflicto de dependencias"
                 modalMessage.value = `No se puede borrar. Está siendo utilizado en:\n• ${error.response.data.recipes.join('\n• ')}`
             } else {
-                alert("Error al borrar el ingrediente")
+                modalTitle.value = "Error"
+                modalMessage.value = "No se pudo borrar el ingrediente."
+                isModalOpen.value = true
                 isModalOpen.value = false
             }
         }
