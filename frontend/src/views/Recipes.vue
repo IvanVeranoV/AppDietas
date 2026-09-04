@@ -1,15 +1,15 @@
 <template>
   <div class="recipe-view flex h-full min-h-0 flex-col">
-    <div class="page-header">
-      <div>
-        <h2 class="app-page-title">My Recipes</h2>
-        <p class="app-page-subtitle">Manage your culinary creations and view preparation steps.</p>
-      </div>
-      <button type="button" v-if="recipes.length > 0 && !isLoading && !hasServerError" @click="openCreateModal"
-        class="btn-primary px-4 py-2.5 flex items-center gap-2 text-sm shadow-lg shadow-emerald-500/10">
-        ➕ Add New Recipe
-      </button>
-    </div>
+    <PageHeader
+      title="My Recipes"
+      subtitle="Manage your culinary creations and view preparation steps."
+    >
+      <template #actions>
+        <AppButton v-if="recipes.length > 0 && !isLoading && !hasServerError" variant="primary" @click="openCreateModal">
+          Add Recipe
+        </AppButton>
+      </template>
+    </PageHeader>
 
     <div class="recipe-scroll-panel min-h-0 flex-1 overflow-y-auto">
       <div v-if="isLoading" class="text-center py-12 app-surface">
@@ -19,26 +19,24 @@
       <div v-else-if="hasServerError" class="text-center py-12 bg-rose-950/20 rounded-xl border border-rose-800/50 p-6">
       <span class="text-4xl">⚠️</span>
       <h3 class="text-xl font-bold text-rose-400 mt-2">Unable to retrieve data from the server</h3>
-      <button type="button" @click="fetchRecipes"
-        class="mt-4 bg-rose-500 hover:bg-rose-600 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors">
+      <AppButton variant="secondary" class="mt-4" @click="fetchRecipes">
         Retry connection
-      </button>
+      </AppButton>
     </div>
 
       <div v-else-if="recipes.length === 0" class="text-center py-12 app-surface p-6">
       <span class="text-4xl">🍳</span>
       <h3 class="text-xl font-bold text-slate-200 mt-2">No recipes created yet</h3>
       <p class="text-slate-400 mt-1 mb-6">Ready to start planning your diet?</p>
-      <button type="button" @click="openCreateModal"
-        class="btn-primary-sm px-4 py-2">
-        ➕ Create your first recipe
-      </button>
+      <AppButton variant="primary" @click="openCreateModal">
+        Add Recipe
+      </AppButton>
     </div>
 
       <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       <div v-for="recipe in recipes" :key="recipe.id"
-        class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden flex flex-col justify-between group hover:border-slate-700 transition-all duration-300">
-        <div class="relative h-48 bg-slate-950 overflow-hidden">
+        class="app-recipe-card group">
+        <div class="app-recipe-image">
           <img
             :src="`https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=600&q=80&sig=${recipe.id}`"
             :alt="recipe.name"
@@ -49,10 +47,9 @@
           <h3 class="text-xl font-bold text-slate-100 mb-4 line-clamp-2 min-h-14 flex items-center">
             {{ recipe.name }}
           </h3>
-          <button type="button" @click="openInstructions(recipe)"
-            class="w-full bg-slate-800 hover:bg-emerald-500 hover:text-slate-950 text-emerald-400 font-semibold py-2.5 px-4 rounded-lg transition-all duration-300 flex items-center justify-center gap-2 border border-slate-700">
-            📖 View Instructions
-          </button>
+          <AppButton variant="secondary" class="w-full" @click="openInstructions(recipe)">
+            View Instructions
+          </AppButton>
         </div>
       </div>
       </div>
@@ -62,9 +59,9 @@
       <div @click="closeViewModal" class="modal-backdrop"></div>
 
       <div class="modal-window-lg animate-in fade-in zoom-in-95 duration-200">
-        <div class="p-6 border-b border-slate-800 flex justify-between items-start bg-slate-950/40">
+        <div class="app-modal-header flex justify-between items-start">
           <h3 class="text-2xl font-bold text-slate-100 pr-4">{{ selectedRecipe?.name }}</h3>
-          <button type="button" @click="closeViewModal" class="btn-icon">✕</button>
+          <AppButton variant="icon" @click="closeViewModal">✕</AppButton>
         </div>
 
         <div class="p-6 max-h-[65vh] overflow-y-auto space-y-6">
@@ -75,7 +72,7 @@
             <div v-if="selectedRecipe?.ingredients && selectedRecipe.ingredients.length > 0"
               class="grid grid-cols-1 sm:grid-cols-2 gap-2">
               <div v-for="item in selectedRecipe.ingredients" :key="item.ingredient_id"
-                class="flex justify-between items-center bg-slate-950/40 border border-slate-800/80 px-4 py-2.5 rounded-xl text-sm">
+                class="app-card-soft flex justify-between items-center px-4 py-2.5 text-sm">
                 <span class="text-slate-300 font-medium">
                   {{ingredientsCatalog.find(ing => ing.id === item.ingredient_id)?.name || `Ingredient
                   #${item.ingredient_id}`}}
@@ -95,23 +92,23 @@
           <div class="space-y-2">
             <h4 class="text-xs font-bold text-emerald-400 uppercase tracking-wider">Preparation Steps</h4>
             <p
-              class="text-slate-300 leading-relaxed whitespace-pre-line text-sm bg-slate-950/20 p-4 rounded-xl border border-slate-800/50">
+              class="app-card-soft text-slate-300 leading-relaxed whitespace-pre-line p-4 text-sm">
               {{ selectedRecipe?.instructions }}
             </p>
                         <div class="p-4 text-right flex justify-end gap-2">
-              <button type="button" @click="openEditModal(selectedRecipe)" class="btn-link">Edit</button>
-              <button type="button" @click="initiateDelete(selectedRecipe)" class="btn-danger">Delete</button>
+              <AppButton variant="link" @click="openEditModal(selectedRecipe)">Edit</AppButton>
+              <AppButton variant="danger" @click="initiateDelete(selectedRecipe)">Delete</AppButton>
             </div>
 
             <EditModal :show="isEditModalOpen" title="Edit Recipe" @close="isEditModalOpen = false" @confirm="handleUpdate">
               <div class="space-y-4">
                 <div class="space-y-2">
                   <label for="edit-recipe-name" class="text-xs font-bold text-slate-400 uppercase">Recipe Name</label>
-                  <input id="edit-recipe-name" v-model="newRecipe.name" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-200 text-sm focus:outline-none focus:border-emerald-500" />
+                  <input id="edit-recipe-name" v-model="newRecipe.name" class="app-input" />
                 </div>
                 <div class="space-y-2">
                   <label for="edit-recipe-instructions" class="text-xs font-bold text-slate-400 uppercase">Instructions</label>
-                  <textarea id="edit-recipe-instructions" v-model="newRecipe.instructions" rows="4" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-200 text-sm focus:outline-none focus:border-emerald-500"></textarea>
+                  <textarea id="edit-recipe-instructions" v-model="newRecipe.instructions" rows="4" class="app-input"></textarea>
                 </div>
               </div>
             </EditModal>
@@ -123,8 +120,8 @@
 
         </div>
 
-        <div class="p-4 bg-slate-950/40 border-t border-slate-800 flex justify-end">
-          <button type="button" @click="closeViewModal" class="btn-secondary px-5 py-2 text-sm">Close</button>
+        <div class="app-modal-footer flex justify-end">
+          <AppButton variant="secondary" @click="closeViewModal">Close</AppButton>
         </div>
       </div>
     </div>
@@ -133,9 +130,9 @@
       <div @click="!isSubmitting && closeCreateModal()" class="modal-backdrop"></div>
 
       <div class="modal-window animate-in fade-in zoom-in-95 duration-200">
-        <div class="p-6 border-b border-slate-800 flex justify-between items-center bg-slate-950/40">
+        <div class="app-modal-header flex justify-between items-center">
           <h3 class="text-xl font-bold text-slate-100">Create New Recipe</h3>
-          <button type="button" :disabled="isSubmitting" @click="closeCreateModal" class="btn-icon disabled:opacity-50">✕</button>
+          <AppButton variant="icon" :disabled="isSubmitting" @click="closeCreateModal">✕</AppButton>
         </div>
 
         <form @submit.prevent="handleCreateRecipe">
@@ -162,10 +159,9 @@
             <div class="space-y-3 pt-2 border-t border-slate-800/60">
               <div class="flex justify-between items-center">
                 <div class="form-label">Ingredients & Quantities</div>
-                <button type="button" @click="addIngredientRow"
-                  class="text-xs bg-slate-800 hover:bg-slate-700 text-emerald-400 font-semibold px-2.5 py-1 rounded-lg border border-slate-700 transition-colors">
-                  ➕ Add Ingredient
-                </button>
+                <AppButton variant="secondary" @click="addIngredientRow">
+                    Add Ingredient
+                </AppButton>
               </div>
 
               <div v-for="(row, index) in recipeIngredientsForm" :key="index"
@@ -173,7 +169,7 @@
 
                 <label :for="`ingredient-${index}`" class="sr-only">Ingredient</label>
                 <select :id="`ingredient-${index}`" v-model="row.ingredient_id"
-                  class="grow bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-slate-200 text-sm focus:outline-none focus:border-emerald-500"
+                  class="app-input grow px-3 py-2.5"
                   required>
                   <option value="" disabled>Select an ingredient...</option>
                   <option v-for="ing in ingredientsCatalog" :key="ing.id" :value="ing.id"
@@ -184,26 +180,24 @@
 
                 <label :for="`quantity-${index}`" class="sr-only">Quantity</label>
                 <input :id="`quantity-${index}`" v-model="row.quantity" type="number" min="1" required placeholder="Qty"
-                  class="w-20 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-slate-200 text-sm text-center focus:outline-none focus:border-emerald-500" />
+                  class="app-input w-20 px-3 py-2.5 text-center" />
 
-                <button type="button" @click="removeIngredientRow(index)" :disabled="recipeIngredientsForm.length === 1"
-                  class="p-2.5 text-rose-500 hover:bg-rose-950/30 rounded-xl border border-transparent hover:border-rose-900/50 disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
+                <AppButton variant="icon-danger" @click="removeIngredientRow(index)" :disabled="recipeIngredientsForm.length === 1"
                   title="Remove ingredient">
                   ✕
-                </button>
+                </AppButton>
               </div>
             </div>
 
           </div>
 
-          <div class="p-4 bg-slate-950/40 border-t border-slate-800 flex justify-end gap-3">
-            <button type="button" :disabled="isSubmitting" @click="closeCreateModal" class="btn-secondary px-4 py-2 text-sm">
+          <div class="app-modal-footer flex justify-end gap-3">
+            <AppButton variant="secondary" :disabled="isSubmitting" @click="closeCreateModal">
               Cancel
-            </button>
-            <button type="submit" :disabled="isSubmitting || !newRecipeName.trim()"
-              class="btn-primary px-5 py-2 text-sm disabled:bg-slate-800 disabled:text-slate-600">
+            </AppButton>
+            <AppButton type="submit" variant="primary" :disabled="isSubmitting || !newRecipeName.trim()">
               {{ isSubmitting ? 'Saving...' : 'Save Recipe' }}
-            </button>
+            </AppButton>
           </div>
         </form>
       </div>
@@ -213,12 +207,17 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import axios from 'axios'
 import Modal from '../components/Modal.vue'
 import EditModal from '../components/EditModal.vue'
-
-const API_RECIPES_URL = import.meta.env.VITE_API_RECIPES_URL
-const API_INGREDIENTS_URL = import.meta.env.VITE_API_INGREDIENTS_URL
+import AppButton from '../components/AppButton.vue'
+import PageHeader from '../components/PageHeader.vue'
+import {
+  createRecipe,
+  deleteRecipe,
+  getIngredients,
+  getRecipes,
+  updateRecipe
+} from '../services/recipeService.js'
 
 const recipes = ref([])
 const isLoading = ref(true)
@@ -237,8 +236,6 @@ const hasLoadedIngredients = ref(false)
 
 const newRecipe = ref({ name: '', instructions: '' }) // O los campos que tenga tu receta
 
-const isDeleteMode = ref(false)
-
 const isModalOpen = ref(false)
 const modalTitle = ref('')
 const modalMessage = ref('')
@@ -254,7 +251,7 @@ const normalizeRecipe = (recipe) => ({
     ? recipe.ingredients.map(item => ({
         ingredient_id: item.ingredient_id,
         quantity: item.quantity
-      })) : 'No preparation steps provided for this recipe yet.'
+      })) : []
 })
 
 const recipeIngredientsForm = ref([
@@ -265,7 +262,7 @@ const fetchRecipes = async () => {
   try {
     hasServerError.value = false
     isLoading.value = true
-    const response = await axios.get(`${API_RECIPES_URL}`)
+    const response = await getRecipes()
     recipes.value = Array.isArray(response.data)
       ? response.data.map(normalizeRecipe)
       : []
@@ -282,7 +279,7 @@ const fetchIngredientsIfNeeded = async () => {
   if (hasLoadedIngredients.value) return
 
   try {
-    const response = await axios.get(`${API_INGREDIENTS_URL}`)
+    const response = await getIngredients()
     ingredientsCatalog.value = response.data
     hasLoadedIngredients.value = true
   } catch (error) {
@@ -330,7 +327,7 @@ const openEditModal = (recipe) => {
 
 const handleUpdate = async () => {
   try {
-    const response = await axios.patch(`${API_RECIPES_URL}/${newRecipe.value.id}`, newRecipe.value)
+    const response = await updateRecipe(newRecipe.value.id, newRecipe.value)
     
     // Actualizamos la lista de recetas
     await fetchRecipes()
@@ -347,7 +344,7 @@ const handleUpdate = async () => {
 const handleConfirm = async () => {
   try {
     // Asegúrate de apuntar a la ruta correcta de recetas
-    await axios.delete(`${API_RECIPES_URL}/${recipeIdToDelete.value}`)
+    await deleteRecipe(recipeIdToDelete.value)
     await fetchRecipes() // Refresca tu lista de recetas
     isModalOpen.value = false
     closeViewModal()
@@ -387,7 +384,7 @@ const handleCreateRecipe = async () => {
       ingredients: validIngredients // <--- ¡Aquí viaja tu lista relacional!
     }
 
-    const response = await axios.post(API_RECIPES_URL, payload)
+    const response = await createRecipe(payload)
 
     if (response.status === 201) {
       recipes.value.push(normalizeRecipe(response.data))

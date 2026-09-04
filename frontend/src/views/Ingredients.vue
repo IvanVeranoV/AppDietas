@@ -1,11 +1,12 @@
 <template>
     <div class="inventory-shell">
-        <div class="page-header">
-            <h2 class="app-page-title">Ingredient Inventory</h2>
-            <button type="button" @click="openCreateModal" class="btn-primary px-4 py-2">
-                + New Ingredient
-            </button>
-        </div>
+        <PageHeader title="Ingredient Inventory">
+            <template #actions>
+                <AppButton variant="primary" @click="openCreateModal">
+                    Add Ingredient
+                </AppButton>
+            </template>
+        </PageHeader>
 
         <table class="inventory-table">
             <thead class="bg-slate-950 text-slate-400 text-left">
@@ -24,8 +25,8 @@
                         {{categories.find(cat => cat.id === ing.category_id)?.name || 'Uncategorized'}}
                     </td>
                     <td class="p-4 text-right flex justify-end gap-2">
-                        <button type="button" @click="openEditModal(ing)" class="btn-link text-sm">Edit</button>
-                        <button type="button" @click="initiateDelete(ing)" class="btn-danger text-sm">Delete</button>
+                        <AppButton variant="link" @click="openEditModal(ing)">Edit</AppButton>
+                        <AppButton variant="danger" @click="initiateDelete(ing)">Delete</AppButton>
                     </td>
                 </tr>
             </tbody>
@@ -36,7 +37,7 @@
                 <div>
                     <label for="ingredient-name" class="block text-xs font-bold text-slate-400 uppercase">Name</label>
                     <input id="ingredient-name" v-model="newIngredient.name" type="text" required
-                        class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 mt-1" />
+                        class="app-input mt-1" />
                 </div>
                 <label for="ingredient-fresh" class="flex items-center gap-2 text-sm">
                     <input id="ingredient-fresh" v-model="newIngredient.is_fresh" type="checkbox" /> Is this ingredient fresh? (🌿)
@@ -44,7 +45,7 @@
                 <div>
                     <label for="ingredient-category" class="block text-xs font-bold text-slate-400 uppercase">Category</label>
                     <select id="ingredient-category" v-model="newIngredient.category_id" required
-                        class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 mt-1">
+                        class="app-input mt-1">
                         <option :value="null" disabled>Select a category...</option>
                         <option v-for="cat in categories" :key="cat.id" :value="cat.id">{{ cat.name }}</option>
                     </select>
@@ -60,6 +61,8 @@
 import { ref, onMounted } from 'vue'
 import axios from 'axios'
 import Modal from '../components/Modal.vue'
+import AppButton from '../components/AppButton.vue'
+import PageHeader from '../components/PageHeader.vue'
 
 const API_INGREDIENTS_URL = import.meta.env.VITE_API_INGREDIENTS_URL
 const API_CATEGORIES_URL = import.meta.env.VITE_API_CATEGORIES_URL
@@ -138,7 +141,6 @@ const handleConfirm = async () => {
                 modalTitle.value = "Error"
                 modalMessage.value = "No se pudo borrar el ingrediente."
                 isModalOpen.value = true
-                isModalOpen.value = false
             }
         }
     }

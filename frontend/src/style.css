@@ -1,33 +1,25 @@
 @import "tailwindcss";
 
-@theme {
-  --color-brand-dark: #0b1120;
-  --color-brand-panel: #111827;
-  --color-brand-card: #1f2937;
-  --color-brand-border: #374151;
-  --color-brand-emerald: #10b981;
-  --color-brand-text: #f3f4f6;
-  --color-brand-muted: #9ca3af;
-
-  --radius-sm: 0.5rem;
-  --radius-md: 0.75rem;
-  --radius-lg: 1rem;
-  --radius-xl: 1.25rem;
-
-  --shadow-soft: 0 10px 30px rgba(15, 23, 42, 0.12);
-  --shadow-card: 0 8px 20px rgba(16, 185, 129, 0.08);
-}
-
 @layer base {
   :root {
     color-scheme: dark;
+    --app-font-family: Inter, "Segoe UI", sans-serif;
     --app-bg: #0b1120;
     --app-panel: #111827;
     --app-card: #1f2937;
     --app-border: #374151;
+    --app-border-soft: rgba(55, 65, 81, 0.8);
     --app-emerald: #10b981;
+    --app-emerald-hover: #059669;
     --app-text: #f3f4f6;
     --app-muted: #9ca3af;
+    --app-danger: #fb7185;
+    --app-danger-bg: rgba(76, 5, 25, 0.3);
+    --app-button-height: 2.5rem;
+    --app-button-radius: 0.5rem;
+    --app-control-font-size: 0.875rem;
+    --app-title-size: 1.5rem;
+    --app-title-line-height: 2rem;
     --app-radius-sm: 0.5rem;
     --app-radius-md: 0.75rem;
     --app-radius-lg: 1rem;
@@ -39,54 +31,149 @@
   body {
     background: var(--app-bg);
     color: var(--app-text);
-    font-family: Inter, "Segoe UI", sans-serif;
+    font-family: var(--app-font-family);
   }
 }
 
 @layer components {
   .app-page-title {
-    @apply text-2xl font-bold leading-8 text-emerald-400;
+    color: var(--app-emerald);
+    font-size: var(--app-title-size);
+    font-weight: 700;
+    line-height: var(--app-title-line-height);
   }
 
   .app-page-subtitle {
-    @apply text-slate-400;
+    color: var(--app-muted);
   }
 
-  .btn-primary {
-    @apply bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold rounded-lg transition-colors shadow-sm;
+  .app-button {
+    min-height: var(--app-button-height);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border-radius: var(--app-button-radius);
+    padding: 0.5rem 1rem;
+    font-size: var(--app-control-font-size);
+    font-weight: 600;
+    transition: background-color 150ms, border-color 150ms, color 150ms;
   }
 
-  .btn-primary-sm {
-    @apply bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-semibold rounded-lg transition-colors shadow-sm;
+  .app-button:focus-visible {
+    outline: 2px solid var(--app-emerald);
+    outline-offset: 2px;
   }
 
-  .btn-secondary {
-    @apply bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium rounded-lg transition-colors;
+  .app-button:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
   }
 
-  .btn-icon {
-    @apply text-slate-400 hover:text-slate-200 bg-slate-800/50 hover:bg-slate-800 p-1.5 rounded-lg;
+  .app-button-primary {
+    background: var(--app-emerald);
+    color: var(--app-bg);
+    font-weight: 700;
+    box-shadow: var(--app-shadow-card);
   }
 
-  .btn-link {
-    @apply text-emerald-400 hover:text-emerald-300 font-medium;
+  .app-button-primary:hover:not(:disabled) {
+    background: var(--app-emerald-hover);
   }
 
-  .btn-danger {
-    @apply text-red-400 hover:text-red-300 font-medium;
+  .app-button-secondary {
+    border: 1px solid var(--app-border);
+    background: var(--app-card);
+    color: var(--app-muted);
   }
+
+  .app-button-secondary:hover:not(:disabled) {
+    background: var(--app-border);
+    color: var(--app-text);
+  }
+
+  .app-button-ghost {
+    padding-inline: 0.75rem;
+    color: var(--app-muted);
+  }
+
+  .app-button-ghost:hover:not(:disabled) {
+    background: var(--app-card);
+    color: var(--app-text);
+  }
+
+  .app-button-link {
+    padding-inline: 0.75rem;
+    color: var(--app-emerald);
+  }
+
+  .app-button-link:hover:not(:disabled) {
+    background: rgba(6, 78, 59, 0.3);
+    color: #6ee7b7;
+  }
+
+  .app-button-danger {
+    padding-inline: 0.75rem;
+    color: var(--app-danger);
+  }
+
+  .app-button-danger:hover:not(:disabled) {
+    background: var(--app-danger-bg);
+    color: #fda4af;
+  }
+
+  .app-button-icon,
+  .app-button-icon-danger {
+    width: var(--app-button-height);
+    height: var(--app-button-height);
+    padding: 0;
+  }
+
+  .app-button-icon {
+    border: 1px solid transparent;
+    background: rgba(30, 41, 59, 0.5);
+    color: var(--app-muted);
+  }
+
+  .app-button-icon:hover:not(:disabled) {
+    border-color: var(--app-border);
+    background: var(--app-card);
+    color: var(--app-text);
+  }
+
+  .app-button-icon-danger {
+    border: 1px solid transparent;
+    color: #f43f5e;
+  }
+
+  .app-button-icon-danger:hover:not(:disabled) {
+    border-color: rgba(136, 19, 55, 0.5);
+    background: var(--app-danger-bg);
+    color: #fda4af;
+  }
+
+  .app-card-soft { background: rgba(2, 6, 23, 0.4); border: 1px solid var(--app-border-soft); border-radius: var(--app-radius-md); }
+  .app-recipe-card { @apply overflow-hidden flex flex-col justify-between transition-all duration-300; background: var(--app-panel); border: 1px solid var(--app-border); border-radius: var(--app-radius-md); }
+  .app-recipe-card:hover { border-color: #475569; }
+  .app-recipe-image { @apply relative h-48 overflow-hidden; background: var(--app-bg); }
 
   .modal-backdrop {
     @apply absolute inset-0 bg-slate-950/75 backdrop-blur-sm;
   }
 
   .modal-window {
-    @apply bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl relative z-10;
+    @apply w-full max-w-lg overflow-hidden relative z-10;
+    background: var(--app-panel);
+    border: 1px solid var(--app-border);
+    border-radius: var(--app-radius-xl);
     box-shadow: var(--app-shadow-soft);
   }
 
   .modal-window-lg {
-    @apply bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-xl overflow-hidden shadow-2xl relative z-10;
+    @apply w-full max-w-xl overflow-hidden relative z-10;
+    background: var(--app-panel);
+    border: 1px solid var(--app-border);
+    border-radius: var(--app-radius-xl);
     box-shadow: var(--app-shadow-soft);
   }
 
@@ -95,16 +182,23 @@
   }
 
   .app-input {
-    @apply w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-200 text-sm placeholder-slate-600 focus:outline-none focus:border-emerald-500 transition-colors;
+    @apply w-full px-4 py-3 text-sm transition-colors;
+    background: var(--app-bg);
+    border: 1px solid var(--app-border);
+    border-radius: var(--app-radius-md);
+    color: var(--app-text);
+  }
+
+  .app-input:focus {
+    outline: 2px solid var(--app-emerald);
+    outline-offset: -1px;
   }
 
   .app-surface {
-    @apply bg-slate-900 border border-slate-800 rounded-xl;
+    @apply rounded-xl;
+    background: var(--app-panel);
+    border: 1px solid var(--app-border);
     box-shadow: var(--app-shadow-card);
-  }
-
-  .app-surface-soft {
-    @apply bg-slate-950/40 border border-slate-800/80 rounded-xl;
   }
 
   .sidebar-shell {
@@ -128,31 +222,49 @@
   }
 
   .modal-shell {
-    @apply relative bg-slate-900 border border-slate-700 w-full max-w-lg rounded-2xl shadow-2xl p-6;
+    @apply relative w-full max-w-lg rounded-2xl shadow-2xl p-6;
+    background: var(--app-panel);
+    border: 1px solid var(--app-border);
   }
 
   .modal-shell-alt {
-    @apply bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl relative z-10;
+    @apply w-full max-w-lg overflow-hidden shadow-2xl relative z-10;
+    background: var(--app-panel);
+    border: 1px solid var(--app-border);
+    border-radius: var(--app-radius-xl);
   }
 
+  .app-modal-header,
   .modal-header {
-    @apply p-6 border-b border-slate-800 flex justify-between items-center bg-slate-950/40;
+    @apply p-6 flex justify-between items-center;
+    border-bottom: 1px solid var(--app-border);
+    background: rgba(2, 6, 23, 0.4);
   }
 
+  .app-modal-footer,
   .modal-footer {
-    @apply p-4 bg-slate-950/40 border-t border-slate-800 flex justify-end gap-3;
+    @apply p-4 flex justify-end gap-3;
+    border-top: 1px solid var(--app-border);
+    background: rgba(2, 6, 23, 0.4);
   }
 
   .dashboard-shell {
     @apply h-full min-h-0 flex flex-col text-slate-200;
   }
 
-  .page-shell {
-    @apply h-full min-h-0 flex flex-col text-slate-200;
+  .page-header {
+    @apply flex flex-none min-h-16 items-start justify-between gap-4 border-b border-slate-800/80 pb-6;
+    margin-top: 0;
+    padding-top: 0;
   }
 
-  .page-header {
-    @apply flex flex-none min-h-16 items-center justify-between gap-4 border-b border-slate-800/80 pb-6;
+  .page-header-copy {
+    @apply min-w-0;
+    min-height: 3.5rem;
+  }
+
+  .page-header-actions {
+    @apply flex shrink-0 items-center;
   }
 
   .route-content {
@@ -161,6 +273,18 @@
 
   .route-content.recipe-view {
     overflow: hidden;
+    display: flex;
+    width: 100%;
+    min-height: 0;
+    margin-top: 0;
+    padding-top: 0;
+  }
+
+  .route-content.recipe-view > .page-header {
+    flex: 0 0 auto;
+    width: 100%;
+    margin: 0;
+    padding-top: 0;
   }
 
   .route-content.recipe-view > :first-child {
@@ -187,35 +311,48 @@
   }
 
   .calendar-shell {
-    @apply h-full min-h-0 flex flex-col w-full bg-brand-dark text-gray-200;
-  }
-
-  .calendar-header-button {
-    @apply bg-brand-emerald text-white px-6 py-2 rounded-lg font-semibold hover:bg-emerald-600 transition shadow-sm;
+    @apply h-full min-h-0 flex flex-col w-full;
+    background: var(--app-bg);
+    color: var(--app-text);
   }
 
   .calendar-cell {
-    @apply h-28 border border-gray-700 rounded-xl p-2 bg-brand-panel hover:border-emerald-500/50 transition-colors;
+    @apply h-28 rounded-xl p-2 transition-colors;
+    background: var(--app-panel);
+    border: 1px solid var(--app-border);
+  }
+
+  .calendar-cell:hover {
+    border-color: rgba(16, 185, 129, 0.5);
   }
 
   .meal-card {
-    @apply w-full h-full bg-brand-card p-3 rounded-lg border border-brand-border shadow-sm hover:border-brand-emerald/50 transition-all;
+    @apply w-full h-full p-3 rounded-lg shadow-sm transition-all;
+    background: var(--app-card);
+    border: 1px solid var(--app-border);
     box-shadow: var(--app-shadow-card);
   }
 
+  .meal-card:hover { border-color: rgba(16, 185, 129, 0.5); }
+
   .meal-card-badge {
-    @apply text-[9px] bg-brand-emerald/10 text-brand-emerald px-1.5 py-0.5 rounded uppercase font-semibold;
+    @apply text-[9px] px-1.5 py-0.5 rounded uppercase font-semibold;
+    background: rgba(16, 185, 129, 0.1);
+    color: var(--app-emerald);
   }
 
   .meal-card-type {
-    @apply text-[9px] font-bold text-brand-emerald uppercase;
+    @apply text-[9px] font-bold uppercase;
+    color: var(--app-emerald);
   }
 
   .meal-card-title {
-    @apply text-sm font-bold text-brand-text leading-tight truncate;
+    @apply text-sm font-bold leading-tight truncate;
+    color: var(--app-text);
   }
 
   .meal-card-calories {
-    @apply text-[10px] text-brand-muted font-medium;
+    @apply text-[10px] font-medium;
+    color: var(--app-muted);
   }
 }

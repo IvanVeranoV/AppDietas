@@ -1,11 +1,12 @@
 <template>
   <div class="calendar-shell">
-    <div class="page-header">
-      <h2 class="app-page-title">Weekly Menu</h2>
-      <button type="button" class="calendar-header-button">
-        + New Recipe
-      </button>
-    </div>
+    <PageHeader title="Weekly Menu">
+      <template #actions>
+        <AppButton variant="primary">
+          Add Recipe
+        </AppButton>
+      </template>
+    </PageHeader>
 
     <div class="w-full flex flex-col gap-2">
       <div class="grid grid-cols-[100px_repeat(7,1fr)] gap-4 mb-4">
@@ -36,6 +37,8 @@
 
 <script setup>
 import MealCard from '../../components/MealCard.vue'
+import AppButton from '../../components/AppButton.vue'
+import PageHeader from '../../components/PageHeader.vue'
 
 // Datos de ejemplo simulando tu base de datos
 const weekDays = [
