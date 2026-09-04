@@ -91,7 +91,11 @@ class RecipeIngredientDetailRead(BaseModel):
 
 class RecipeRead(RecipeBase):
     id: int
-    ingredients: list[RecipeIngredientDetailRead] = []
+    ingredients: list[RecipeIngredientDetailRead] = Field(
+        default_factory=list,
+        validation_alias="recipe_ingredients",
+        serialization_alias="ingredients",
+    )
 
     class Config:
         from_attributes = True

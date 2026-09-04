@@ -45,7 +45,7 @@
 
 @layer components {
   .app-page-title {
-    @apply text-3xl font-bold text-emerald-400;
+    @apply text-2xl font-bold leading-8 text-emerald-400;
   }
 
   .app-page-subtitle {
@@ -144,11 +144,42 @@
   }
 
   .dashboard-shell {
-    @apply space-y-4;
+    @apply h-full min-h-0 flex flex-col text-slate-200;
+  }
+
+  .page-shell {
+    @apply h-full min-h-0 flex flex-col text-slate-200;
+  }
+
+  .page-header {
+    @apply flex flex-none min-h-16 items-center justify-between gap-4 border-b border-slate-800/80 pb-6;
+  }
+
+  .route-content {
+    @apply h-full overflow-y-auto;
+  }
+
+  .route-content.recipe-view {
+    overflow: hidden;
+  }
+
+  .route-content.recipe-view > :first-child {
+    position: static;
+    z-index: auto;
+    box-shadow: none;
+  }
+
+  .route-content > :first-child {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    isolation: isolate;
+    background-color: var(--app-bg);
+    box-shadow: 0 1rem 0 var(--app-bg);
   }
 
   .inventory-shell {
-    @apply p-6 text-slate-200;
+    @apply h-full min-h-0 flex flex-col text-slate-200;
   }
 
   .inventory-table {
@@ -156,7 +187,7 @@
   }
 
   .calendar-shell {
-    @apply p-8 w-full h-full bg-brand-dark text-gray-200;
+    @apply h-full min-h-0 flex flex-col w-full bg-brand-dark text-gray-200;
   }
 
   .calendar-header-button {

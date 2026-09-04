@@ -1,6 +1,6 @@
 <template>
     <div class="inventory-shell">
-        <div class="flex justify-between items-center mb-6">
+        <div class="page-header">
             <h2 class="app-page-title">Ingredient Inventory</h2>
             <button type="button" @click="openCreateModal" class="btn-primary px-4 py-2">
                 + New Ingredient

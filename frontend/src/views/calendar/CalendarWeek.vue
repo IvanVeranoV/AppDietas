@@ -1,7 +1,7 @@
 <template>
   <div class="calendar-shell">
-    <div class="flex justify-between items-center mb-8">
-      <h2 class="text-2xl font-bold text-white">Weekly Menu</h2>
+    <div class="page-header">
+      <h2 class="app-page-title">Weekly Menu</h2>
       <button type="button" class="calendar-header-button">
         + New Recipe
       </button>

@@ -16,7 +16,13 @@ router = APIRouter(tags=["recipes"])
 @router.get("", response_model=list[RecipeRead])
 @router.get("/", response_model=list[RecipeRead])
 def list_recipes(db: Session = Depends(get_db)):
-    return get_recipes(db)
+    result = get_recipes(db)
+    print("--- VALORES RETORNADOS POR get_recipes ---")
+    for recipe in result:
+        print(f"ID: {recipe.id}, Name: {recipe.name}, Deleted At: {recipe.deleted_at}")
+        for ingredient in recipe.recipe_ingredients:
+            print(f"  Ingredient ID: {ingredient.ingredient_id}, Name: {ingredient.ingredient.name}, Quantity: {ingredient.quantity}")
+    return result
 
 @router.post("", response_model=RecipeRead, status_code=status.HTTP_201_CREATED)
 @router.post("/", response_model=RecipeRead, status_code=status.HTTP_201_CREATED)

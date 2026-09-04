@@ -1,6 +1,6 @@
 <template>
-  <div class="space-y-6">
-    <div class="flex justify-between items-center">
+  <div class="recipe-view flex h-full min-h-0 flex-col">
+    <div class="page-header">
       <div>
         <h2 class="app-page-title">My Recipes</h2>
         <p class="app-page-subtitle">Manage your culinary creations and view preparation steps.</p>
@@ -11,11 +11,12 @@
       </button>
     </div>
 
-    <div v-if="isLoading" class="text-center py-12 app-surface">
-      <p class="text-emerald-400 font-medium animate-pulse text-lg">⏳ Connecting to server...</p>
-    </div>
+    <div class="recipe-scroll-panel min-h-0 flex-1 overflow-y-auto">
+      <div v-if="isLoading" class="text-center py-12 app-surface">
+        <p class="text-emerald-400 font-medium animate-pulse text-lg">⏳ Connecting to server...</p>
+      </div>
 
-    <div v-else-if="hasServerError" class="text-center py-12 bg-rose-950/20 rounded-xl border border-rose-800/50 p-6">
+      <div v-else-if="hasServerError" class="text-center py-12 bg-rose-950/20 rounded-xl border border-rose-800/50 p-6">
       <span class="text-4xl">⚠️</span>
       <h3 class="text-xl font-bold text-rose-400 mt-2">Unable to retrieve data from the server</h3>
       <button type="button" @click="fetchRecipes"
@@ -24,7 +25,7 @@
       </button>
     </div>
 
-    <div v-else-if="recipes.length === 0" class="text-center py-12 app-surface p-6">
+      <div v-else-if="recipes.length === 0" class="text-center py-12 app-surface p-6">
       <span class="text-4xl">🍳</span>
       <h3 class="text-xl font-bold text-slate-200 mt-2">No recipes created yet</h3>
       <p class="text-slate-400 mt-1 mb-6">Ready to start planning your diet?</p>
@@ -34,7 +35,7 @@
       </button>
     </div>
 
-    <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       <div v-for="recipe in recipes" :key="recipe.id"
         class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden flex flex-col justify-between group hover:border-slate-700 transition-all duration-300">
         <div class="relative h-48 bg-slate-950 overflow-hidden">
@@ -42,10 +43,10 @@
             :src="`https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=600&q=80&sig=${recipe.id}`"
             :alt="recipe.name"
             class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-90 group-hover:opacity-100" />
-          <div class="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent"></div>
+          <div class="absolute inset-0 bg-linear-to-t from-slate-900 via-transparent to-transparent"></div>
         </div>
-        <div class="p-5 flex-grow flex flex-col justify-between">
-          <h3 class="text-xl font-bold text-slate-100 mb-4 line-clamp-2 min-h-[3.5rem] flex items-center">
+        <div class="p-5 grow flex flex-col justify-between">
+          <h3 class="text-xl font-bold text-slate-100 mb-4 line-clamp-2 min-h-14 flex items-center">
             {{ recipe.name }}
           </h3>
           <button type="button" @click="openInstructions(recipe)"
@@ -53,6 +54,7 @@
             📖 View Instructions
           </button>
         </div>
+      </div>
       </div>
     </div>
 
@@ -171,7 +173,7 @@
 
                 <label :for="`ingredient-${index}`" class="sr-only">Ingredient</label>
                 <select :id="`ingredient-${index}`" v-model="row.ingredient_id"
-                  class="flex-grow bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-slate-200 text-sm focus:outline-none focus:border-emerald-500"
+                  class="grow bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-slate-200 text-sm focus:outline-none focus:border-emerald-500"
                   required>
                   <option value="" disabled>Select an ingredient...</option>
                   <option v-for="ing in ingredientsCatalog" :key="ing.id" :value="ing.id"
@@ -247,7 +249,12 @@ const normalizeRecipe = (recipe) => ({
   name: recipe.name,
   instructions: recipe.instructions && recipe.instructions.trim() !== ""
     ? recipe.instructions
-    : 'No preparation steps provided for this recipe yet.'
+    : 'No preparation steps provided for this recipe yet.',
+  ingredients: Array.isArray(recipe.ingredients)
+    ? recipe.ingredients.map(item => ({
+        ingredient_id: item.ingredient_id,
+        quantity: item.quantity
+      })) : 'No preparation steps provided for this recipe yet.'
 })
 
 const recipeIngredientsForm = ref([
@@ -283,7 +290,8 @@ const fetchIngredientsIfNeeded = async () => {
   }
 }
 
-const openInstructions = (recipe) => {
+const openInstructions = async (recipe) => {
+  await fetchIngredientsIfNeeded()
   selectedRecipe.value = recipe
   isViewModalOpen.value = true
 }

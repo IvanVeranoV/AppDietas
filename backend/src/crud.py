@@ -199,8 +199,8 @@ def create_recipe(
                 recipe_id=new_recipe.id,
                 ingredient_id=ing.ingredient_id,
                 quantity=ing.quantity
-            )
-            db.add(db_recipe_ingredient)
+                )
+                db.add(db_recipe_ingredient)
         
         db.commit()
 
